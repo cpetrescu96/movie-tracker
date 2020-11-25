@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Text,
   Image,
@@ -9,18 +9,31 @@ import {
   HStack,
   Heading,
   IconButton,
-} from '@chakra-ui/react';
-import { ChevronLeftIcon, AddIcon, CheckIcon } from '@chakra-ui/icons';
-import { useParams, useHistory } from 'react-router-dom';
-import useMovie from '../hooks/useMovie';
-import { buildImageUrl, imageFallback } from '../connectors/tmdb';
-import { getYear, STATUS } from '../utils';
-import WatchlistButton from '../components/WatchlistButton';
+} from "@chakra-ui/react";
+import { ChevronLeftIcon, AddIcon, CheckIcon } from "@chakra-ui/icons";
+import { useParams, useHistory } from "react-router-dom";
+import useMovie from "../hooks/useMovie";
+import { buildImageUrl, imageFallback } from "../connectors/tmdb";
+import { getYear, STATUS } from "../utils";
+import FavoriteButton from "../components/FavoriteButton";
+import HistoryButton from "../components/HistoryButton";
+import { Rating } from "@material-ui/lab";
+import { MovieGenre } from "./style";
+import { withStyles } from "@material-ui/core/styles";
+import FavoriteIcon from '@material-ui/icons/Favorite';
+
+const StyledRating = withStyles({
+  iconFilled: {
+    color: "#3457D5",
+  },
+  iconEmpty: {
+    color: "white",
+  }
+})(Rating);
 
 export default function Movie() {
   const { movieId } = useParams();
   const history = useHistory();
-  const [isHistoryActive, setHistoryActive] = React.useState(false); // temp state, for UI only, should be removed when implemented properly
 
   const { movie, status, error, updateStatus, updateMovie } = useMovie(movieId);
 
@@ -44,6 +57,12 @@ export default function Movie() {
     );
   }
 
+  const renderMovieGenre = () => {
+    return movie.genres.map(({ name }) => {
+      return <MovieGenre>{name}</MovieGenre>;
+    });
+  };
+
   return (
     <Container p={3} maxW="80em">
       <HStack mb={3} justify="space-between">
@@ -56,20 +75,22 @@ export default function Movie() {
           onClick={history.goBack}
         />
         <HStack>
-          <WatchlistButton movie={movie} status={updateStatus} update={updateMovie} />
-          <IconButton
-            aria-label={isHistoryActive ? 'Remove from history' : 'Mark as watched'}
-            icon={isHistoryActive ? <CheckIcon /> : <AddIcon />}
-            colorScheme="teal"
-            variant={isHistoryActive ? 'solid' : 'outline'}
-            onClick={() => setHistoryActive(a => !a)}
+          <FavoriteButton
+            movie={movie}
+            status={updateStatus}
+            update={updateMovie}
+          />
+          <HistoryButton
+            movie={movie}
+            status={updateStatus}
+            update={updateMovie}
           />
         </HStack>
       </HStack>
       <HStack spacing={3} align="flex-start">
         <Box>
           <Image
-            src={buildImageUrl(movie.poster_path, 'w300')}
+            src={buildImageUrl(movie.poster_path, "w300")}
             alt="Poster"
             w="35vw"
             maxW={300}
@@ -77,12 +98,49 @@ export default function Movie() {
           />
         </Box>
         <Box w="100%">
-          <HStack justify="space-between">
-            <Heading as="h2">{movie.title}</Heading>
-            <Text as="span" color="GrayText">
-              {getYear(movie.release_date)}
-            </Text>
-          </HStack>
+          <Heading
+            as="h2"
+            style={{ display: "flex", alignItems: "center", width: "100%", marginBottom: "10px" }}
+          >
+            {movie.title} ({getYear(movie.release_date)})
+          </Heading>
+          <StyledRating
+            value={movie.vote_average / 2}
+            getLabelText={(value) => `${value} Heart${value !== 1 ? 's' : ''}`}
+            precision={0.5}
+            readOnly
+            icon={<FavoriteIcon fontSize="inherit" />}
+            style={{
+              marginBottom: "10px"
+            }}
+          />
+          <Text
+            as="span"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              fontSize: "1rem",
+              fontWeight: 400,
+              marginBottom: "10px"
+            }}
+          >
+            Votes: {movie.vote_count}
+          </Text>
+          <Text
+            as="span"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginLeft: ".5rem",
+              flex: 1,
+              fontSize: "1rem",
+              fontWeight: 400,
+              justifyContent: "flex-end",
+              marginBottom: "10px"
+            }}
+          >
+            {renderMovieGenre()}
+          </Text>
           <Text>{movie.overview}</Text>
         </Box>
       </HStack>

@@ -48,4 +48,15 @@ router.get('/watchlist', async (req, res) => {
   res.send(movies);
 });
 
+router.get('/historylist', async (req, res) => {
+  const movies = await db.movies
+    .find({ historylist: 'watched' })
+    .sort(['release_date', -1])
+    .limit(100)
+    .toArray();
+
+  await sleep();
+  res.send(movies);
+});
+
 module.exports = router;

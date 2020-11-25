@@ -1,5 +1,5 @@
-import React from 'react';
-import { useParams, useHistory, Link as RouterLink } from 'react-router-dom';
+import React from "react";
+import { useParams, useHistory, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Input,
@@ -10,18 +10,34 @@ import {
   Link,
   Progress,
   Text,
-} from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
-import useFetchEffect from '../hooks/useFetchEffect';
-import { buildSearchMovieUrl } from '../connectors/tmdb';
-import { getYear, STATUS } from '../utils';
+  Image,
+} from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
+import useFetchEffect from "../hooks/useFetchEffect";
+import {
+  buildImageUrl,
+  buildSearchMovieUrl,
+  imageFallback,
+} from "../connectors/tmdb";
+import { getYear, STATUS } from "../utils";
+import Rating from "@material-ui/lab/Rating";
+import { withStyles } from "@material-ui/core/styles";
+import FavoriteIcon from '@material-ui/icons/Favorite';
+
+const StyledRating = withStyles({
+  iconFilled: {
+    color: "#3457D5",
+  },
+  iconEmpty: {
+    color: "white",
+  }
+})(Rating);
 
 export default function Search() {
   const { terms } = useParams();
   const history = useHistory();
   const searchRef = React.useRef(null);
-
-  const handleSearch = event => {
+  const handleSearch = (event) => {
     event.preventDefault();
     const value = searchRef.current.value;
     if (value !== terms) {
@@ -29,12 +45,20 @@ export default function Search() {
     }
   };
 
-  const { status, data, error } = useFetchEffect(buildSearchMovieUrl(terms), !!terms);
+  const { status, data, error } = useFetchEffect(
+    buildSearchMovieUrl(terms),
+    !!terms
+  );
 
   return (
     <Container p={3}>
       <Box as="form" onSubmit={handleSearch} w="100%" d="flex" mb={3}>
-        <Input placeholder="Search for a movie..." defaultValue={terms} ref={searchRef} mr={3} />
+        <Input
+          placeholder="Search for a movie..."
+          defaultValue={terms}
+          ref={searchRef}
+          mr={3}
+        />
         <IconButton
           aria-label="Search for a movie"
           icon={<SearchIcon />}
@@ -42,7 +66,9 @@ export default function Search() {
           isLoading={status === STATUS.PENDING}
         />
       </Box>
-      {status === STATUS.IDLE && <Text>Type some terms and submit for a quick search</Text>}
+      {status === STATUS.IDLE && (
+        <Text>Type some terms and submit for a quick search</Text>
+      )}
       {status === STATUS.PENDING && <Progress size="xs" isIndeterminate />}
       {status === STATUS.REJECTED && (
         <Text>
@@ -50,20 +76,61 @@ export default function Search() {
         </Text>
       )}
       {status === STATUS.RESOLVED && (
-        <UnorderedList>
-          {data.results.map(({ id, title, release_date }) => (
-            <ListItem key={id}>
-              <Link as={RouterLink} to={`/movies/${id}`}>
-                <Text as="span">{title} </Text>
-                <Text as="span" color="GrayText">
-                  {getYear(release_date)}
-                </Text>
-              </Link>
-            </ListItem>
-          ))}
+        <UnorderedList style={{ listStyleType: "none", padding: 0, margin: 0 }}>
+          {!data.total_results && (
+            <Text>
+              There are no movies with the name "{searchRef.current.value}"
+            </Text>
+          )}
+          {data.results.map(
+            ({ id, title, release_date, vote_average, poster_path }) => {
+              return (
+                <ListItem key={id} style={{ height: "50px", margin: "0 4px" }}>
+                  <Link
+                    as={RouterLink}
+                    to={`/movies/${id}`}
+                    style={{ display: "flex", textDecorationColor: "#0CAFFF" }}
+                  >
+                    <Image
+                      src={buildImageUrl(poster_path, "w300")}
+                      alt="Poster"
+                      w="20px"
+                      maxW="20px"
+                      fallbackSrc={imageFallback}
+                    />
+                    <Text
+                      as="span"
+                      style={{ display: "flex", marginLeft: ".5rem" }}
+                    >
+                      {title}
+                      <Box as="span" ml={2}>
+                        <StyledRating
+                          value={vote_average / 2}
+                          getLabelText={(value) => `${value} Heart${value !== 1 ? 's' : ''}`}
+                          precision={0.5}
+                          readOnly
+                          icon={<FavoriteIcon fontSize="inherit" />}
+                        />
+                      </Box>
+                    </Text>
+                    <Text
+                      as="span"
+                      color="white"
+                      style={{
+                        display: "flex",
+                        flex: 1,
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      {getYear(release_date)}
+                    </Text>
+                  </Link>
+                </ListItem>
+              );
+            }
+          )}
         </UnorderedList>
       )}
-      {/* @todo: Display a message when no results */}
     </Container>
   );
 }

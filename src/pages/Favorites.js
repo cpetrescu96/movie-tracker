@@ -1,13 +1,3 @@
-// import { Text } from '@chakra-ui/react';
-
-// export default function History() {
-//   return (
-//     <Text textAlign="center" mt={3}>
-//       History page
-//     </Text>
-//   );
-// }
-
 import React from "react";
 import {
   Text,
@@ -23,11 +13,11 @@ import {
 import { Link } from "react-router-dom";
 import useFetchEffect from "../hooks/useFetchEffect";
 import { buildImageUrl, imageFallback } from "../connectors/tmdb";
-import { HISTORY_URL } from "../connectors/api";
+import { WATCHLIST_URL } from "../connectors/api";
 import { STATUS } from "../utils";
 
-export default function Historylist() {
-  const { status, data: movies, error } = useFetchEffect(`${HISTORY_URL}`);
+export default function Favorites() {
+  const { status, data: movies, error } = useFetchEffect(`${WATCHLIST_URL}`);
 
   if (status === STATUS.IDLE) {
     return null;

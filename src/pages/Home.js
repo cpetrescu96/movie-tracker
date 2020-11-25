@@ -1,9 +1,6 @@
-import { Text } from '@chakra-ui/react';
+import { Text } from "@chakra-ui/react";
+import VideoBackground from "../components/VideoBackground";
 
 export default function Home() {
-  return (
-    <Text textAlign="center" mt={3}>
-      Up and running!
-    </Text>
-  );
+  return <VideoBackground />;
 }

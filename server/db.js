@@ -2,10 +2,10 @@ const MongoClient = require('mongodb').MongoClient;
 
 // Bad practice: don't keep sensitive data in git
 const CONFIG = {
-  USER: 'vic',
-  PASS: 'G7h6k296kZfwrnQf',
-  URL: 'cms-cluster0.y1gul.mongodb.net',
-  DB: 'app',
+  USER: 'cristi',
+  PASS: 'dbpass',
+  URL: 'cluster0.ul2do.mongodb.net',
+  DB: 'movie-tracker',
 };
 
 const uri = `mongodb+srv://${encodeURIComponent(CONFIG.USER)}:${encodeURIComponent(CONFIG.PASS)}@${
